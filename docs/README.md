@@ -60,9 +60,14 @@ $ rump -from redis://127.0.0.1:6379/1 -to redis://127.0.0.1:6379/2 -ttl
 
 ```sh
 # requirements: docker, docker-compose (dc)
-dc up # watch/run Rump tests and a Redis container
-dc run --rm rump sh # get shell on Rump container
-dc run --rm redis sh; redis-cli -h redis # get Redis console
+docker-compose up # watch/run Rump tests and a Redis container
+docker-compose run --rm rump sh # get shell on Rump container
+docker-compose run --rm redis sh; redis-cli -h redis # get Redis console
+```
+
+Build binaries:
+```sh
+./bin/build.sh
 ```
 
 ## Install
