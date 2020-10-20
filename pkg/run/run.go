@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/mediocregopher/radix/v3"
 	"golang.org/x/sync/errgroup"
@@ -36,9 +37,16 @@ func Run(cfg config.Config) {
 	// Create shared message bus
 	ch := make(message.Bus, 100)
 
+	tlsConnFunc := func(network, addr string) (radix.Conn, error) {
+		return radix.Dial(network, addr,
+			radix.DialTimeout(1 * time.Minute),
+			radix.DialUseTLS(nil), // needs a newer version of radix!
+		)
+	}
+
 	// Create and run either a Redis or File Source reader.
 	if cfg.Source.IsRedis {
-		db, err := radix.NewPool("tcp", cfg.Source.URI, 1)
+		db, err := radix.NewPool("tcp", cfg.Source.URI, 1 , radix.PoolConnFunc(tlsConnFunc))
 		if err != nil {
 			exit(err)
 		}
@@ -58,7 +66,7 @@ func Run(cfg config.Config) {
 
 	// Create and run either a Redis or File Target writer.
 	if cfg.Target.IsRedis {
-		db, err := radix.NewPool("tcp", cfg.Target.URI, 1)
+		db, err := radix.NewPool("tcp", cfg.Target.URI, 1, radix.PoolConnFunc(tlsConnFunc))
 		if err != nil {
 			exit(err)
 		}
